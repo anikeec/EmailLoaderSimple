@@ -1,0 +1,42 @@
+/*
+You have to fill settings according to the example below.
+
+If you want to save messages to HDD (directory /out/) 
+then
+	savetodisk=true 
+else 
+	savetodisk=false
+	
+If you want to copy messages to other mailbox 
+(in this case you have to fill settings for sec.email) 
+then
+	copytoemail=true 
+else 
+	copytoemail=false
+
+For example you want to save messages on HDD and copy messages 
+from mailbox: xxx@ukr.net, password: xxxPassword, folder: INBOX
+to mailbox: yyy@ukr.net, password: yyyPassword, folder: INBOX
+file for store list of loaded to PC messages: storagePC.txt
+file for store list of loaded to secondary mailbox messages: storageEmail.txt
+*/
+
+savetodisk=true
+copytoemail=true
+
+email.login=xxx
+email.password=xxxPassword
+email.directory=INBOX
+email.server=imap.ukr.net
+email.host=ukr.net
+email.storage.filename=storagePC.txt
+
+sec.email.login=yyy
+sec.email.password=yyyPassword
+sec.email.directory=INBOX
+sec.email.server=imap.gmail.com
+sec.email.host=gmail.com
+sec.email.storage.filename=storageEmail.txt
+
+imap.debug.enable=true
+global.debug.enable=true

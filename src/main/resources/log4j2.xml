@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	I would recommend using the log4j-1.2 adapter that is included in the log4j2 distribution. 
+	That way, any libraries coded to the log4j-1.2 API will work with log4j2 without any code changes.
+	Your classpath should include:
+	log4j-api-2.6.1.jar
+	log4j-core-2.6.1.jar
+	log4j-1.2-api-2.6.1.jar
+	log4j2.xml
+	link: https://stackoverflow.com/questions/22321109/configuring-log4j2-and-log4j-using-a-single-log4j2-xml-file
+ -->
+<Configuration status="ALL">
+    <Properties>
+        <Property name="logfilename">emailLoader.log</Property>
+        <Property name="debuglogfilename">emailLoaderDebug.log</Property>
+    </Properties>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p - %m%n" /> <!-- [%c] -->
+		</Console>
+		<File name="FileLogger" fileName="${logfilename}" immediateFlush="true">
+	        <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p - %m%n" />
+	    </File>
+	    <File name="DebugFileLogger" fileName="${debuglogfilename}" immediateFlush="true">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS}  %m%n" />
+        </File>
+	    <Async name="ASYNC">
+			<AppenderRef ref="Console"/>
+			<AppenderRef ref="FileLogger"/>
+	    </Async>
+	    <Async name="LOGDEBUG">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="DebugFileLogger"/>
+        </Async>
+	</Appenders>
+	<Loggers>	    
+        <Logger name="outLog" level="ALL" additivity="false">
+            <AppenderRef ref="LOGDEBUG" />
+        </Logger>	    
+		<Logger name="org.springframework.integration" level="debug" additivity="false">
+	        <AppenderRef ref="ASYNC" />
+	    </Logger>    
+        <Logger name="org.springframework" level="debug" additivity="false">
+            <AppenderRef ref="ASYNC" />
+        </Logger>
+        <Logger name="org.springframework.integration.handler.LoggingHandler" level="info" additivity="false">
+            <AppenderRef ref="ASYNC" />
+        </Logger>
+        <Logger name="org.springframework.integration.samples" level="debug" additivity="false">
+            <AppenderRef ref="ASYNC" />
+        </Logger>
+        <Root level="all">
+            <AppenderRef ref="ASYNC" />
+        </Root>
+	</Loggers>
+</Configuration>
