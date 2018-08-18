@@ -115,7 +115,7 @@ public class EmailUtils {
 //        return retStr;         
 //    }
     
-    private static final String PUNCT_SUBJECT_EMAIL = "!\"#$%&'()*+,/:;?[\\]^`{|}~";
+    private static final String PUNCT_SUBJECT_EMAIL = "<>!\"#$%&'()*+,/:;?[\\]^`{|}~";
     
     public static String removePunctFromEmail(String str) {
         String result = str.replaceAll("(\\r\\n)+", "");
@@ -146,6 +146,17 @@ public class EmailUtils {
 //        return retValue;
 //    }
     
+    private static String getEmailFromAddress(String strSrc) {
+        if(strSrc == null)
+            return null;
+        int start = strSrc.indexOf('<');
+        int finish = strSrc.indexOf('>');
+        if((start == -1)||(finish == -1))
+            return strSrc;
+        String ret = strSrc.substring(start + 1, finish);
+        return ret;
+    }
+    
     public static String getDirectoryNameFromMessage(EmailEntity message) throws MessagingException {
         String emailSubject = "";
         try {
@@ -157,12 +168,12 @@ public class EmailUtils {
         if(EmailProcess.SENDED_MESSAGES) {
             String[] recipients = message.getTo();
             if(recipients.length > 1) {
-                emailAddress = recipients[0] + " c";
+                emailAddress = getEmailFromAddress(recipients[0]) + " c";
             } else {
-                emailAddress = recipients[0];
+                emailAddress = getEmailFromAddress(recipients[0]);
             }            
         } else {
-            emailAddress = message.getFrom();
+            emailAddress = getEmailFromAddress(message.getFrom());
         }
         Date emailSentDate;
         if (message.getSentDate() != null)
@@ -172,6 +183,8 @@ public class EmailUtils {
         String directoryName = StringUtils.dateFormat(emailSentDate) + " - " + emailAddress + " - "
                 + EmailUtils.checkEmailSubject(emailSubject);
         directoryName = EmailUtils.checkEmailDirectory(directoryName).trim();
+//        if(directoryName.length() > 100)
+//            directoryName = directoryName.substring(0, 100);
         return "out\\" + directoryName;
     }
     
