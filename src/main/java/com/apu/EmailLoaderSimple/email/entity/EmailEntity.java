@@ -124,8 +124,14 @@ public class EmailEntity {
         date = msg.getSentDate();
         if(date != null)
             entity.setSentDate(date);
-        entity.setMsgUniqueID(entity.getMsgID() + "-" + entity.getReceivedDate());
+        
         entity.setSubject(msg.getSubject());
+        
+        String msgUniqueID = entity.getMsgID() + "-" + 
+                            entity.getReceivedDate() + "-" +
+                            entity.getSubject().hashCode();
+        
+        entity.setMsgUniqueID(msgUniqueID);
         
         Address[] addresses = msg.getAllRecipients();
         String[] strs = new String[addresses.length];
