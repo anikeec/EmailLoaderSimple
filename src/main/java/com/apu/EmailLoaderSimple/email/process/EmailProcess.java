@@ -43,20 +43,24 @@ public class EmailProcess {
     private static Logger LOGGER = LogManager.getLogger(EmailProcess.class.getName());
     
     public static boolean SENDED_MESSAGES = true;
-
-    public void getMessages() throws MessagingException {
-        IMAPFolder folder = null, secondFolder = null;
-        Store store = null, secondStore = null;              
-        
-        AppSettings settings;
+    
+    private AppSettings settings;
+    
+    public void loadAppSettings() {
         try {
             settings = EmailUtils.loadSettings();
         } catch (IOException e) {
             LOGGER.error("Error loading settings from property file.");
             LOGGER.error(ExceptionUtils.getStackTrace(e));
-            return;
-        }  
-            
+        }
+    }
+    
+    public void getFolders() throws MessagingException {
+        Store store = null;
+        
+        if(settings == null)
+            loadAppSettings();
+        
         try {
             Properties props = System.getProperties();
             props.setProperty("mail.store.protocol", "imaps");
@@ -73,11 +77,62 @@ public class EmailProcess {
                     settings.mailboxSrc().getPassword());
             Folder[] folders = store.getDefaultFolder().list();
             StringBuilder sb = new StringBuilder();
-            sb.append("\r\nFirst email folders:\r\n");                
+            sb.append("\r\nSource email folders:\r\n");                
             for(Folder fld:folders) {
-                sb.append(fld.getFullName() + "\r\n");
+                sb.append("     " + fld.getFullName() + "\r\n");
             } 
             LOGGER.info(sb.toString());
+            store.close();
+            store = null;
+            
+            store = session.getStore("imaps");
+            store.connect(
+                    settings.mailboxDst().getServer(), 
+                    settings.mailboxDst().getLogin() + "@" + settings.mailboxDst().getHost(), 
+                    settings.mailboxDst().getPassword());
+            folders = store.getDefaultFolder().list("*");
+            sb = new StringBuilder();
+            sb.append("\r\nDestination email folders:\r\n");                
+            for(Folder fld:folders) {
+                sb.append("     " + fld.getFullName() + "\r\n");
+            } 
+            LOGGER.info(sb.toString());
+            store.close();
+            store = null;
+            
+        } catch (NoSuchProviderException e) {
+            LOGGER.error(ExceptionUtils.getStackTrace(e));
+        } catch (MessagingException e) {
+            LOGGER.error(ExceptionUtils.getStackTrace(e));
+        } finally {
+            if (store != null) {
+                store.close();
+            }
+        }
+    }
+
+    public void getMessages() throws MessagingException {
+        IMAPFolder folder = null, secondFolder = null;
+        Store store = null, secondStore = null;              
+        
+        if(settings == null)
+            loadAppSettings();
+            
+        try {
+            Properties props = System.getProperties();
+            props.setProperty("mail.store.protocol", "imaps");
+            if(settings.isImapDebugEnable())
+                props.setProperty("mail.debug", "true");
+            else
+                props.setProperty("mail.debug", "false");
+
+            Session session = Session.getDefaultInstance(props, null);
+            store = session.getStore("imaps");
+            store.connect(
+                    settings.mailboxSrc().getServer(), 
+                    settings.mailboxSrc().getLogin() + "@" + settings.mailboxSrc().getHost(), 
+                    settings.mailboxSrc().getPassword());
+
             folder = (IMAPFolder) store.getFolder(settings.mailboxSrc().getDirectory());
 
             if (!folder.isOpen())
@@ -91,13 +146,6 @@ public class EmailProcess {
                         settings.mailboxDst().getServer(), 
                         settings.mailboxDst().getLogin() + "@" + settings.mailboxDst().getHost(), 
                         settings.mailboxDst().getPassword());
-                folders = secondStore.getDefaultFolder().list("*");
-                sb = new StringBuilder();
-                sb.append("\r\nSecond email folders:\r\n");                
-                for(Folder fld:folders) {
-                    sb.append(fld.getFullName() + "\r\n");
-                } 
-                LOGGER.info(sb.toString());
             
                 secondFolder = (IMAPFolder) secondStore.getFolder(settings.mailboxDst().getDirectory()); 
                 if (!secondFolder.isOpen())
