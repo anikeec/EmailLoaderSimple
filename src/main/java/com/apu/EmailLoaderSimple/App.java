@@ -45,6 +45,7 @@ public class App
                                 break;
                         case 2:
                                 instance.getMessages();
+                                returnToMenu = true;
                                 exitFlag = true;
                                 break;
                         default:
